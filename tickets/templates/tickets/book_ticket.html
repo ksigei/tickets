@@ -1,0 +1,541 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Book Tickets - {{ match.home_team.code }} vs {{ match.away_team.code }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .booking-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .match-summary {
+        background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .booking-form {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+    
+    .form-section {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .form-section:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        color: var(--dark-blue);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .section-title i {
+        margin-right: 0.5rem;
+        color: var(--primary-orange);
+    }
+    
+    .ticket-option {
+        background: #f8f9fa;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .ticket-option:hover {
+        border-color: var(--primary-orange);
+    }
+    
+    .ticket-option.selected {
+        border-color: var(--primary-orange);
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 140, 66, 0.1) 100%);
+    }
+    
+    .ticket-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .ticket-name {
+        font-weight: 600;
+        color: var(--dark-blue);
+    }
+    
+    .ticket-price {
+        font-weight: bold;
+        color: var(--primary-orange);
+        font-size: 1.1rem;
+    }
+    
+    .ticket-description {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+    
+    .payment-method-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .payment-option {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        padding: 1rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .payment-option:hover {
+        border-color: var(--primary-orange);
+    }
+    
+    .payment-option.selected {
+        border-color: var(--primary-orange);
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 140, 66, 0.1) 100%);
+    }
+    
+    .payment-icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        color: var(--primary-orange);
+    }
+    
+    .payment-name {
+        font-weight: 600;
+        color: var(--dark-blue);
+    }
+    
+    .order-summary {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    
+    .summary-total {
+        border-top: 2px solid var(--primary-orange);
+        padding-top: 1rem;
+        margin-top: 1rem;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .quantity-selector {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+    
+    .quantity-btn {
+        background: var(--primary-orange);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .quantity-btn:hover {
+        background: var(--secondary-orange);
+        transform: scale(1.1);
+    }
+    
+    .quantity-input {
+        width: 80px;
+        text-align: center;
+        border: 2px solid #e9ecef;
+        border-radius: 10px;
+        margin: 0 1rem;
+        padding: 0.5rem;
+        font-weight: bold;
+    }
+    
+    .currency-tabs {
+        display: flex;
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 0.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .currency-tab {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: 0.75rem;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+    }
+    
+    .currency-tab.active {
+        background: var(--primary-orange);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-container">
+    <!-- Match Summary -->
+    <div class="match-summary">
+        <h3 class="mb-3">
+            {{ match.home_team.code }} vs {{ match.away_team.code }}
+        </h3>
+        <p class="mb-2">
+            <i class="fas fa-calendar"></i>
+            {{ match.date_time|date:"F d, Y" }} at {{ match.date_time|date:"H:i" }}
+        </p>
+        <p class="mb-0">
+            <i class="fas fa-map-marker-alt"></i>
+            {{ match.venue.name }}, {{ match.venue.city }}
+        </p>
+    </div>
+
+    <!-- Booking Form -->
+    <form method="post" class="booking-form" id="booking-form">
+        {% csrf_token %}
+        
+        <!-- Currency Selection -->
+        <div class="form-section">
+            <h5 class="section-title">
+                <i class="fas fa-money-bill-wave"></i>
+                Select Currency
+            </h5>
+            <div class="currency-tabs">
+                <button type="button" class="currency-tab active" data-currency="KES">
+                    KES (Kenya)
+                </button>
+                <button type="button" class="currency-tab" data-currency="UGX">
+                    UGX (Uganda)
+                </button>
+                <button type="button" class="currency-tab" data-currency="TZS">
+                    TZS (Tanzania)
+                </button>
+            </div>
+            {{ form.currency }}
+        </div>
+
+        <!-- Ticket Selection -->
+        <div class="form-section">
+            <h5 class="section-title">
+                <i class="fas fa-ticket-alt"></i>
+                Select Ticket Category
+            </h5>
+            <div id="ticket-options">
+                {% for ticket_price in ticket_prices %}
+                <div class="ticket-option" data-price-id="{{ ticket_price.id }}" 
+                     data-kes="{{ ticket_price.price_kes }}" 
+                     data-ugx="{{ ticket_price.price_ugx }}" 
+                     data-tzs="{{ ticket_price.price_tzs }}"
+                     data-available="{{ ticket_price.available_quantity }}">
+                    <div class="ticket-info">
+                        <div>
+                            <div class="ticket-name">{{ ticket_price.category.name }}</div>
+                            <div class="ticket-description">{{ ticket_price.category.description }}</div>
+                        </div>
+                        <div class="ticket-price">KES {{ ticket_price.price_kes }}</div>
+                    </div>
+                    {% if ticket_price.available_quantity > 0 %}
+                    <div class="quantity-selector" style="display: none;">
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(-1)">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                        <input type="number" class="quantity-input" value="1" min="1" max="{{ ticket_price.available_quantity }}" readonly>
+                        <button type="button" class="quantity-btn" onclick="changeQuantity(1)">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                    {% else %}
+                    <div class="text-danger mt-2">
+                        <i class="fas fa-times-circle"></i> Sold Out
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {{ form.ticket_price }}
+            {{ form.quantity }}
+        </div>
+
+        <!-- Customer Information -->
+        <div class="form-section">
+            <h5 class="section-title">
+                <i class="fas fa-user"></i>
+                Customer Information
+            </h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.customer_name.id_for_label }}" class="form-label">Full Name *</label>
+                    {{ form.customer_name }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="{{ form.customer_email.id_for_label }}" class="form-label">Email Address *</label>
+                    {{ form.customer_email }}
+                </div>
+                <div class="col-12 mb-3">
+                    <label for="{{ form.customer_phone.id_for_label }}" class="form-label">Phone Number *</label>
+                    {{ form.customer_phone }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-section">
+            <h5 class="section-title">
+                <i class="fas fa-credit-card"></i>
+                Payment Method
+            </h5>
+            <div class="payment-method-grid" id="payment-methods">
+                <!-- Mobile Money Options -->
+                <div class="payment-option" data-method="mpesa_ke" data-countries="KES">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">M-Pesa (Kenya)</div>
+                </div>
+                <div class="payment-option" data-method="airtel_ke" data-countries="KES">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">Airtel Money (Kenya)</div>
+                </div>
+                <div class="payment-option" data-method="mtn_ug" data-countries="UGX">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">MTN Mobile Money</div>
+                </div>
+                <div class="payment-option" data-method="airtel_ug" data-countries="UGX">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">Airtel Money (Uganda)</div>
+                </div>
+                <div class="payment-option" data-method="mpesa_tz" data-countries="TZS">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">M-Pesa (Tanzania)</div>
+                </div>
+                <div class="payment-option" data-method="tigo_tz" data-countries="TZS">
+                    <div class="payment-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <div class="payment-name">Tigo Pesa</div>
+                </div>
+                
+                <!-- Card Options -->
+                <div class="payment-option" data-method="visa" data-countries="KES,UGX,TZS">
+                    <div class="payment-icon">
+                        <i class="fab fa-cc-visa"></i>
+                    </div>
+                    <div class="payment-name">Visa Card</div>
+                </div>
+                <div class="payment-option" data-method="mastercard" data-countries="KES,UGX,TZS">
+                    <div class="payment-icon">
+                        <i class="fab fa-cc-mastercard"></i>
+                    </div>
+                    <div class="payment-name">Mastercard</div>
+                </div>
+                <div class="payment-option" data-method="amex" data-countries="KES,UGX,TZS">
+                    <div class="payment-icon">
+                        <i class="fab fa-cc-amex"></i>
+                    </div>
+                    <div class="payment-name">American Express</div>
+                </div>
+            </div>
+            {{ form.payment_method }}
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <h5 class="mb-3">
+                <i class="fas fa-receipt"></i>
+                Order Summary
+            </h5>
+            <div class="summary-row">
+                <span>Ticket Category:</span>
+                <span id="summary-category">-</span>
+            </div>
+            <div class="summary-row">
+                <span>Quantity:</span>
+                <span id="summary-quantity">-</span>
+            </div>
+            <div class="summary-row">
+                <span>Unit Price:</span>
+                <span id="summary-unit-price">-</span>
+            </div>
+            <div class="summary-row summary-total">
+                <span>Total Amount:</span>
+                <span id="summary-total">-</span>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="text-center mt-4">
+            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn" disabled>
+                <i class="fas fa-lock"></i>
+                Complete Booking
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let selectedCurrency = 'KES';
+    let selectedTicket = null;
+    let selectedQuantity = 1;
+    let selectedPayment = null;
+
+    // Currency tab switching
+    $('.currency-tab').click(function() {
+        $('.currency-tab').removeClass('active');
+        $(this).addClass('active');
+        selectedCurrency = $(this).data('currency');
+        $('#id_currency').val(selectedCurrency);
+        updateTicketPrices();
+        updatePaymentMethods();
+        updateSummary();
+    });
+
+    // Ticket selection
+    $('.ticket-option').click(function() {
+        if ($(this).data('available') == 0) return;
+        
+        $('.ticket-option').removeClass('selected');
+        $('.quantity-selector').hide();
+        
+        $(this).addClass('selected');
+        $(this).find('.quantity-selector').show();
+        
+        selectedTicket = {
+            id: $(this).data('price-id'),
+            name: $(this).find('.ticket-name').text(),
+            kes: $(this).data('kes'),
+            ugx: $(this).data('ugx'),
+            tzs: $(this).data('tzs'),
+            available: $(this).data('available')
+        };
+        
+        $('#id_ticket_price').val(selectedTicket.id);
+        updateSummary();
+        checkFormValid();
+    });
+
+    // Payment method selection
+    $('.payment-option').click(function() {
+        $('.payment-option').removeClass('selected');
+        $(this).addClass('selected');
+        selectedPayment = $(this).data('method');
+        $('#id_payment_method').val(selectedPayment);
+        checkFormValid();
+    });
+
+    function updateTicketPrices() {
+        $('.ticket-option').each(function() {
+            const price = $(this).data(selectedCurrency.toLowerCase());
+            $(this).find('.ticket-price').text(selectedCurrency + ' ' + price);
+        });
+    }
+
+    function updatePaymentMethods() {
+        $('.payment-option').each(function() {
+            const countries = $(this).data('countries').split(',');
+            if (countries.includes(selectedCurrency)) {
+                $(this).show();
+            } else {
+                $(this).hide();
+                if ($(this).hasClass('selected')) {
+                    $(this).removeClass('selected');
+                    selectedPayment = null;
+                    $('#id_payment_method').val('');
+                }
+            }
+        });
+    }
+
+    function updateSummary() {
+        if (selectedTicket) {
+            const price = selectedTicket[selectedCurrency.toLowerCase()];
+            const total = price * selectedQuantity;
+            
+            $('#summary-category').text(selectedTicket.name);
+            $('#summary-quantity').text(selectedQuantity);
+            $('#summary-unit-price').text(selectedCurrency + ' ' + price);
+            $('#summary-total').text(selectedCurrency + ' ' + total);
+        }
+    }
+
+    function checkFormValid() {
+        const isValid = selectedTicket && selectedPayment && 
+                        $('#id_customer_name').val() && 
+                        $('#id_customer_email').val() && 
+                        $('#id_customer_phone').val();
+        
+        $('#submit-btn').prop('disabled', !isValid);
+    }
+
+    // Form validation
+    $('#id_customer_name, #id_customer_email, #id_customer_phone').on('input', checkFormValid);
+
+    // Initialize
+    $('#id_currency').val('KES');
+    $('#id_quantity').val(1);
+    updatePaymentMethods();
+});
+
+function changeQuantity(delta) {
+    const input = $('.ticket-option.selected .quantity-input');
+    const current = parseInt(input.val());
+    const max = parseInt(input.attr('max'));
+    const min = parseInt(input.attr('min'));
+    
+    const newValue = Math.max(min, Math.min(max, current + delta));
+    input.val(newValue);
+    selectedQuantity = newValue;
+    $('#id_quantity').val(newValue);
+    updateSummary();
+}
+</script>
+{% endblock %}
+

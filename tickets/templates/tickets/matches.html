@@ -1,0 +1,311 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}All Matches - CHAN 2024 Tickets{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .filter-title {
+        color: var(--dark-blue);
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+    
+    .match-grid {
+        display: grid;
+        gap: 1.5rem;
+    }
+    
+    .match-item {
+        background: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-orange);
+    }
+    
+    .match-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-left-width: 6px;
+    }
+    
+    .match-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .match-teams {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+    }
+    
+    .team {
+        text-align: center;
+        flex: 1;
+    }
+    
+    .team-code {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: var(--dark-blue);
+    }
+    
+    .team-name {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .vs-divider {
+        margin: 0 1rem;
+        color: var(--primary-orange);
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+    
+    .match-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .match-info {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .match-actions {
+        text-align: right;
+    }
+    
+    .date-time {
+        color: var(--dark-blue);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .venue {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .group-badge {
+        background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .price-display {
+        background: linear-gradient(135deg, var(--gold), #ffed4e);
+        color: var(--text-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    
+    .pagination {
+        justify-content: center;
+        margin-top: 2rem;
+    }
+    
+    .page-link {
+        border-radius: 10px;
+        margin: 0 0.25rem;
+        border: 2px solid var(--primary-orange);
+        color: var(--primary-orange);
+    }
+    
+    .page-link:hover {
+        background-color: var(--primary-orange);
+        border-color: var(--primary-orange);
+    }
+    
+    .page-item.active .page-link {
+        background-color: var(--primary-orange);
+        border-color: var(--primary-orange);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4">
+            <i class="fas fa-calendar-alt text-primary"></i> 
+            All Matches
+        </h2>
+    </div>
+</div>
+
+<!-- Filters Section -->
+<div class="filter-section">
+    <h5 class="filter-title">
+        <i class="fas fa-filter"></i> Filter Matches
+    </h5>
+    <form method="get" class="row g-3">
+        <div class="col-md-3">
+            <label for="group" class="form-label">Group</label>
+            <select name="group" id="group" class="form-select">
+                <option value="">All Groups</option>
+                {% for value, label in groups %}
+                    <option value="{{ value }}" {% if current_group == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="team" class="form-label">Team</label>
+            <select name="team" id="team" class="form-select">
+                <option value="">All Teams</option>
+                {% for team in teams %}
+                    <option value="{{ team.code }}" {% if current_team == team.code %}selected{% endif %}>
+                        {{ team.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="venue" class="form-label">Venue</label>
+            <select name="venue" id="venue" class="form-select">
+                <option value="">All Venues</option>
+                {% for venue in venues %}
+                    <option value="{{ venue.id }}" {% if current_venue == venue.id|stringformat:"s" %}selected{% endif %}>
+                        {{ venue.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-search"></i> Filter
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Matches List -->
+{% if matches %}
+<div class="match-grid">
+    {% for match in matches %}
+    <div class="match-item">
+        <div class="match-header">
+            <span class="group-badge">Group {{ match.group }}</span>
+            <div class="date-time">
+                <i class="fas fa-calendar"></i> {{ match.date_time|date:"M d, Y" }}
+                <i class="fas fa-clock ms-2"></i> {{ match.date_time|date:"H:i" }}
+            </div>
+        </div>
+        
+        <div class="match-teams">
+            <div class="team">
+                <div class="team-code">{{ match.home_team.code }}</div>
+                <div class="team-name">{{ match.home_team.name }}</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="team">
+                <div class="team-code">{{ match.away_team.code }}</div>
+                <div class="team-name">{{ match.away_team.name }}</div>
+            </div>
+        </div>
+        
+        <div class="match-details">
+            <div class="match-info">
+                <div class="venue">
+                    <i class="fas fa-map-marker-alt text-primary"></i>
+                    <strong>{{ match.venue.name }}</strong><br>
+                    {{ match.venue.city }}, {{ match.venue.country }}
+                </div>
+            </div>
+            <div class="match-actions">
+                <div class="price-display">From KES 200</div>
+                <div>
+                    <a href="{% url 'match_detail' match.id %}" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="fas fa-info-circle"></i> Details
+                    </a>
+                    <a href="{% url 'book_ticket' match.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-ticket-alt"></i> Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if matches.has_other_pages %}
+<nav aria-label="Matches pagination">
+    <ul class="pagination">
+        {% if matches.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.group %}&group={{ request.GET.group }}{% endif %}{% if request.GET.team %}&team={{ request.GET.team }}{% endif %}{% if request.GET.venue %}&venue={{ request.GET.venue }}{% endif %}">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ matches.previous_page_number }}{% if request.GET.group %}&group={{ request.GET.group }}{% endif %}{% if request.GET.team %}&team={{ request.GET.team }}{% endif %}{% if request.GET.venue %}&venue={{ request.GET.venue }}{% endif %}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for num in matches.paginator.page_range %}
+            {% if matches.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > matches.number|add:'-3' and num < matches.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.group %}&group={{ request.GET.group }}{% endif %}{% if request.GET.team %}&team={{ request.GET.team }}{% endif %}{% if request.GET.venue %}&venue={{ request.GET.venue }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if matches.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ matches.next_page_number }}{% if request.GET.group %}&group={{ request.GET.group }}{% endif %}{% if request.GET.team %}&team={{ request.GET.team }}{% endif %}{% if request.GET.venue %}&venue={{ request.GET.venue }}{% endif %}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ matches.paginator.num_pages }}{% if request.GET.group %}&group={{ request.GET.group }}{% endif %}{% if request.GET.team %}&team={{ request.GET.team }}{% endif %}{% if request.GET.venue %}&venue={{ request.GET.venue }}{% endif %}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h3 class="text-muted">No matches found</h3>
+    <p class="text-muted">Try adjusting your filters or check back later</p>
+    <a href="{% url 'matches' %}" class="btn btn-outline-primary">
+        <i class="fas fa-refresh"></i> Clear Filters
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+

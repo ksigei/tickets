@@ -1,0 +1,422 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Search Results - CHAN 2024 Tickets{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-header {
+        background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .search-form {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .search-input-group {
+        position: relative;
+    }
+    
+    .search-input {
+        border-radius: 25px;
+        border: 2px solid #e9ecef;
+        padding: 1rem 3rem 1rem 1.5rem;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .search-input:focus {
+        border-color: var(--primary-orange);
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 53, 0.25);
+    }
+    
+    .search-btn {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: var(--primary-orange);
+        border: none;
+        border-radius: 20px;
+        padding: 0.75rem 1.5rem;
+        color: white;
+        transition: all 0.3s ease;
+    }
+    
+    .search-btn:hover {
+        background: var(--secondary-orange);
+        transform: translateY(-50%) scale(1.05);
+    }
+    
+    .results-summary {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 2rem;
+        border-left: 4px solid var(--primary-orange);
+    }
+    
+    .match-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-orange);
+    }
+    
+    .match-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        border-left-width: 6px;
+    }
+    
+    .match-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .match-teams {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+    }
+    
+    .team {
+        text-align: center;
+        flex: 1;
+        max-width: 150px;
+    }
+    
+    .team-code {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--dark-blue);
+        margin-bottom: 0.25rem;
+    }
+    
+    .team-name {
+        font-size: 0.9rem;
+        color: #6c757d;
+    }
+    
+    .vs-divider {
+        margin: 0 1.5rem;
+        color: var(--primary-orange);
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+    
+    .match-details {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+    
+    .match-info {
+        flex: 1;
+        min-width: 250px;
+    }
+    
+    .match-actions {
+        text-align: right;
+    }
+    
+    .date-time {
+        color: var(--dark-blue);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .venue {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .group-badge {
+        background: linear-gradient(135deg, var(--primary-orange), var(--secondary-orange));
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .price-display {
+        background: linear-gradient(135deg, var(--gold), #ffed4e);
+        color: var(--text-dark);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        display: inline-block;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    
+    .no-results-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .search-suggestions {
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+    
+    .suggestion-item {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .suggestion-item:hover {
+        border-color: var(--primary-orange);
+        background: rgba(255, 107, 53, 0.05);
+    }
+    
+    .highlight {
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 140, 66, 0.2));
+        padding: 0.1rem 0.3rem;
+        border-radius: 3px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Search Header -->
+<div class="search-header">
+    <h2 class="mb-3">
+        <i class="fas fa-search"></i>
+        Search Matches
+    </h2>
+    <p class="mb-0">Find matches by team names, venues, or cities</p>
+</div>
+
+<!-- Search Form -->
+<div class="search-form">
+    <form method="get" action="{% url 'search_matches' %}">
+        <div class="search-input-group">
+            <input type="text" 
+                   name="q" 
+                   value="{{ query }}" 
+                   class="form-control search-input" 
+                   placeholder="Search for teams, venues, or cities..."
+                   autocomplete="off">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if query %}
+<!-- Results Summary -->
+<div class="results-summary">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong>Search Results for:</strong> 
+            <span class="highlight">"{{ query }}"</span>
+        </div>
+        <div>
+            <span class="badge bg-primary">{{ matches.paginator.count }} match{{ matches.paginator.count|pluralize:"es" }} found</span>
+        </div>
+    </div>
+</div>
+
+<!-- Search Results -->
+{% if matches %}
+<div class="results-container">
+    {% for match in matches %}
+    <div class="match-card">
+        <div class="match-header">
+            <span class="group-badge">Group {{ match.group }}</span>
+            <div class="date-time">
+                <i class="fas fa-calendar"></i> {{ match.date_time|date:"M d, Y" }}
+                <i class="fas fa-clock ms-2"></i> {{ match.date_time|date:"H:i" }}
+            </div>
+        </div>
+        
+        <div class="match-teams">
+            <div class="team">
+                <div class="team-code">{{ match.home_team.code }}</div>
+                <div class="team-name">{{ match.home_team.name }}</div>
+            </div>
+            <div class="vs-divider">VS</div>
+            <div class="team">
+                <div class="team-code">{{ match.away_team.code }}</div>
+                <div class="team-name">{{ match.away_team.name }}</div>
+            </div>
+        </div>
+        
+        <div class="match-details">
+            <div class="match-info">
+                <div class="venue">
+                    <i class="fas fa-map-marker-alt text-primary"></i>
+                    <strong>{{ match.venue.name }}</strong><br>
+                    {{ match.venue.city }}, {{ match.venue.country }}
+                </div>
+            </div>
+            <div class="match-actions">
+                <div class="price-display">From KES 200</div>
+                <div>
+                    <a href="{% url 'match_detail' match.id %}" class="btn btn-outline-primary btn-sm me-2">
+                        <i class="fas fa-info-circle"></i> Details
+                    </a>
+                    <a href="{% url 'book_ticket' match.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-ticket-alt"></i> Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if matches.has_other_pages %}
+<nav aria-label="Search results pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if matches.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&page=1">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&page={{ matches.previous_page_number }}">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            </li>
+        {% endif %}
+        
+        {% for num in matches.paginator.page_range %}
+            {% if matches.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+            {% elif num > matches.number|add:'-3' and num < matches.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ query }}&page={{ num }}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if matches.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&page={{ matches.next_page_number }}">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?q={{ query }}&page={{ matches.paginator.num_pages }}">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<!-- No Results -->
+<div class="no-results">
+    <div class="no-results-icon">
+        <i class="fas fa-search-minus"></i>
+    </div>
+    <h4 class="text-muted mb-3">No matches found</h4>
+    <p class="text-muted mb-4">
+        We couldn't find any matches for <strong>"{{ query }}"</strong>
+    </p>
+    <div class="d-flex justify-content-center gap-2">
+        <a href="{% url 'search_matches' %}" class="btn btn-outline-primary">
+            <i class="fas fa-search"></i> Try New Search
+        </a>
+        <a href="{% url 'matches' %}" class="btn btn-primary">
+            <i class="fas fa-calendar"></i> View All Matches
+        </a>
+    </div>
+</div>
+
+<!-- Search Suggestions -->
+<div class="search-suggestions">
+    <h6 class="mb-3">
+        <i class="fas fa-lightbulb text-warning"></i>
+        Search Suggestions
+    </h6>
+    <div class="row">
+        <div class="col-md-6">
+            <h6 class="text-muted">Try searching for teams:</h6>
+            <div class="suggestion-item" onclick="searchFor('Kenya')">Kenya</div>
+            <div class="suggestion-item" onclick="searchFor('Tanzania')">Tanzania</div>
+            <div class="suggestion-item" onclick="searchFor('Uganda')">Uganda</div>
+            <div class="suggestion-item" onclick="searchFor('Morocco')">Morocco</div>
+        </div>
+        <div class="col-md-6">
+            <h6 class="text-muted">Try searching for venues:</h6>
+            <div class="suggestion-item" onclick="searchFor('Kasarani')">Kasarani Stadium</div>
+            <div class="suggestion-item" onclick="searchFor('Nyayo')">Nyayo Stadium</div>
+            <div class="suggestion-item" onclick="searchFor('Mkapa')">Benjamin Mkapa Stadium</div>
+            <div class="suggestion-item" onclick="searchFor('Mandela')">Mandela Stadium</div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Initial Search State -->
+<div class="text-center py-5">
+    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+    <h4 class="text-muted mb-3">Search for Matches</h4>
+    <p class="text-muted mb-4">Enter team names, venues, or cities to find specific matches</p>
+    <a href="{% url 'matches' %}" class="btn btn-primary">
+        <i class="fas fa-calendar"></i> Browse All Matches
+    </a>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function searchFor(term) {
+    document.querySelector('input[name="q"]').value = term;
+    document.querySelector('form').submit();
+}
+
+// Auto-focus search input
+$(document).ready(function() {
+    $('input[name="q"]').focus();
+});
+</script>
+{% endblock %}
+

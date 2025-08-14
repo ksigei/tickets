@@ -1,0 +1,487 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}Booking Confirmation - {{ booking.booking_reference }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .confirmation-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .success-header {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 3rem 2rem;
+        border-radius: 15px;
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .success-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 3s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .success-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .success-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        animation: bounceIn 1s ease-out;
+    }
+    
+    @keyframes bounceIn {
+        0% { transform: scale(0); opacity: 0; }
+        50% { transform: scale(1.2); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .booking-details {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .details-header {
+        background: linear-gradient(135deg, var(--dark-blue) 0%, var(--light-blue) 100%);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .booking-ref {
+        font-size: 1.5rem;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .booking-status {
+        background: rgba(255, 193, 7, 0.2);
+        color: #856404;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: 600;
+    }
+    
+    .details-body {
+        padding: 2rem;
+    }
+    
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: var(--dark-blue);
+        display: flex;
+        align-items: center;
+    }
+    
+    .detail-label i {
+        margin-right: 0.5rem;
+        color: var(--primary-orange);
+    }
+    
+    .detail-value {
+        text-align: right;
+        color: #495057;
+    }
+    
+    .match-info {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .match-teams {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .team {
+        text-align: center;
+        margin: 0 2rem;
+    }
+    
+    .team-code {
+        font-size: 2rem;
+        font-weight: bold;
+        color: var(--dark-blue);
+    }
+    
+    .team-name {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .vs-text {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--primary-orange);
+    }
+    
+    .tickets-section {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .tickets-header {
+        background: linear-gradient(135deg, var(--primary-orange) 0%, var(--secondary-orange) 100%);
+        color: white;
+        padding: 1.5rem;
+        text-align: center;
+    }
+    
+    .ticket-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .ticket-item:last-child {
+        border-bottom: none;
+    }
+    
+    .ticket-number {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        color: var(--dark-blue);
+        background: #f8f9fa;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: 2px dashed var(--primary-orange);
+    }
+    
+    .ticket-status {
+        background: #d4edda;
+        color: #155724;
+        padding: 0.25rem 0.75rem;
+        border-radius: 15px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+    
+    .payment-info {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: 2px solid #ffc107;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .payment-icon {
+        font-size: 2rem;
+        color: #856404;
+        margin-bottom: 1rem;
+    }
+    
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .btn-download {
+        background: linear-gradient(135deg, #17a2b8 0%, #20c997 100%);
+        border: none;
+        color: white;
+    }
+    
+    .btn-download:hover {
+        background: linear-gradient(135deg, #20c997 0%, #17a2b8 100%);
+        color: white;
+        transform: translateY(-2px);
+    }
+    
+    .next-steps {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        padding: 2rem;
+    }
+    
+    .step {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+    }
+    
+    .step:last-child {
+        margin-bottom: 0;
+    }
+    
+    .step-number {
+        background: var(--primary-orange);
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .step-content h6 {
+        color: var(--dark-blue);
+        margin-bottom: 0.5rem;
+    }
+    
+    .step-content p {
+        color: #6c757d;
+        margin: 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+    <!-- Success Header -->
+    <div class="success-header">
+        <div class="success-content">
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h2 class="mb-3">Booking Confirmed!</h2>
+            <p class="mb-0">Your tickets have been successfully booked. You will receive a confirmation email shortly.</p>
+        </div>
+    </div>
+
+    <!-- Booking Details -->
+    <div class="booking-details">
+        <div class="details-header">
+            <div class="booking-ref">{{ booking.booking_reference }}</div>
+            <div class="booking-status">
+                <i class="fas fa-clock"></i>
+                {{ booking.get_payment_status_display }}
+            </div>
+        </div>
+        <div class="details-body">
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-user"></i>
+                    Customer Name
+                </div>
+                <div class="detail-value">{{ booking.customer_name }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-envelope"></i>
+                    Email
+                </div>
+                <div class="detail-value">{{ booking.customer_email }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-phone"></i>
+                    Phone
+                </div>
+                <div class="detail-value">{{ booking.customer_phone }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-ticket-alt"></i>
+                    Ticket Category
+                </div>
+                <div class="detail-value">{{ booking.ticket_price.category.name }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-hashtag"></i>
+                    Quantity
+                </div>
+                <div class="detail-value">{{ booking.quantity }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Total Amount
+                </div>
+                <div class="detail-value">
+                    <strong>{{ booking.currency }} {{ booking.total_amount }}</strong>
+                </div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-credit-card"></i>
+                    Payment Method
+                </div>
+                <div class="detail-value">{{ booking.get_payment_method_display }}</div>
+            </div>
+            <div class="detail-row">
+                <div class="detail-label">
+                    <i class="fas fa-calendar"></i>
+                    Booking Date
+                </div>
+                <div class="detail-value">{{ booking.created_at|date:"F d, Y H:i" }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Match Information -->
+    <div class="match-info">
+        <h5 class="mb-3">
+            <i class="fas fa-futbol"></i>
+            Match Details
+        </h5>
+        <div class="match-teams">
+            <div class="team">
+                <div class="team-code">{{ booking.ticket_price.match.home_team.code }}</div>
+                <div class="team-name">{{ booking.ticket_price.match.home_team.name }}</div>
+            </div>
+            <div class="vs-text">VS</div>
+            <div class="team">
+                <div class="team-code">{{ booking.ticket_price.match.away_team.code }}</div>
+                <div class="team-name">{{ booking.ticket_price.match.away_team.name }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <strong>Date & Time:</strong><br>
+                {{ booking.ticket_price.match.date_time|date:"F d, Y" }}<br>
+                {{ booking.ticket_price.match.date_time|date:"H:i" }} Local Time
+            </div>
+            <div class="col-md-6">
+                <strong>Venue:</strong><br>
+                {{ booking.ticket_price.match.venue.name }}<br>
+                {{ booking.ticket_price.match.venue.city }}, {{ booking.ticket_price.match.venue.country }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Tickets -->
+    <div class="tickets-section">
+        <div class="tickets-header">
+            <h5 class="mb-0">
+                <i class="fas fa-tickets-alt"></i>
+                Your Tickets
+            </h5>
+        </div>
+        {% for ticket in tickets %}
+        <div class="ticket-item">
+            <div>
+                <div class="ticket-number">{{ ticket.ticket_number }}</div>
+            </div>
+            <div class="ticket-status">
+                <i class="fas fa-check"></i>
+                Valid
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Payment Information -->
+    {% if booking.payment_status == 'pending' %}
+    <div class="payment-info">
+        <div class="payment-icon">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h6>Payment Pending</h6>
+        <p class="mb-0">
+            Please complete your payment using {{ booking.get_payment_method_display }} to confirm your booking.
+            You will receive payment instructions via SMS and email.
+        </p>
+    </div>
+    {% endif %}
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="#" class="btn btn-download btn-lg">
+            <i class="fas fa-download"></i>
+            Download Tickets
+        </a>
+        <a href="{% url 'matches' %}" class="btn btn-outline-primary btn-lg">
+            <i class="fas fa-calendar"></i>
+            Book More Tickets
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-lg">
+            <i class="fas fa-home"></i>
+            Back to Home
+        </a>
+    </div>
+
+    <!-- Next Steps -->
+    <div class="next-steps">
+        <h5 class="mb-4">
+            <i class="fas fa-list-ol"></i>
+            What's Next?
+        </h5>
+        
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-content">
+                <h6>Check Your Email</h6>
+                <p>A confirmation email with your ticket details has been sent to {{ booking.customer_email }}</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-content">
+                <h6>Complete Payment</h6>
+                <p>Follow the payment instructions to complete your booking and secure your tickets</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-content">
+                <h6>Arrive Early</h6>
+                <p>Arrive at the stadium at least 1 hour before kick-off with your tickets and valid ID</p>
+            </div>
+        </div>
+        
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-content">
+                <h6>Enjoy the Match</h6>
+                <p>Experience the excitement of CHAN 2024 and support your favorite teams!</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

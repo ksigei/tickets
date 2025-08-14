@@ -1,0 +1,151 @@
+{% extends 'tickets/base.html' %}
+
+{% block title %}CHAN 2024 Tickets - Home{% endblock %}
+
+{% block content %}
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">
+            <i class="fas fa-fire text-warning"></i> 
+            Upcoming Matches
+        </h2>
+        <p class="text-center text-muted mb-5">Don't miss the chance to experience the intensity of African football live</p>
+    </div>
+</div>
+
+{% if upcoming_matches %}
+<div class="row">
+    {% for match in upcoming_matches %}
+    <div class="col-lg-6 col-md-12 mb-4">
+        <div class="card match-card h-100">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-4 text-center">
+                        <div class="team-info">
+                            <h5 class="mb-1">{{ match.home_team.code }}</h5>
+                            <small class="text-muted">{{ match.home_team.name }}</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="vs-section">
+                            <div class="vs-text">VS</div>
+                            <div class="match-time">
+                                <i class="fas fa-clock"></i>
+                                {{ match.date_time|date:"M d" }}<br>
+                                {{ match.date_time|date:"H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="team-info">
+                            <h5 class="mb-1">{{ match.away_team.code }}</h5>
+                            <small class="text-muted">{{ match.away_team.name }}</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr class="my-3">
+                
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="venue-info">
+                            <i class="fas fa-map-marker-alt text-primary"></i>
+                            <strong>{{ match.venue.name }}</strong><br>
+                            <small>{{ match.venue.city }}, {{ match.venue.country }}</small>
+                        </div>
+                        <div class="group-info mt-2">
+                            <span class="badge bg-secondary">Group {{ match.group }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="price-info mb-2">
+                            <span class="price-badge">From KES 200</span>
+                        </div>
+                        <a href="{% url 'match_detail' match.id %}" class="btn btn-primary btn-sm">
+                            <i class="fas fa-ticket-alt"></i> Book Tickets
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="text-center mt-4">
+    <a href="{% url 'matches' %}" class="btn btn-outline-primary btn-lg">
+        <i class="fas fa-calendar-alt"></i> View All Matches
+    </a>
+</div>
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+    <h3 class="text-muted">No upcoming matches</h3>
+    <p class="text-muted">Check back later for match updates</p>
+</div>
+{% endif %}
+
+<!-- Tournament Info Section -->
+<div class="row mt-5 pt-5 border-top">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Championship</h5>
+                <p class="card-text">The premier African football tournament featuring the best local talent from across the continent.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">19 Teams</h5>
+                <p class="card-text">Teams from across Africa competing in 4 groups for the ultimate prize in African football.</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-center h-100">
+            <div class="card-body">
+                <i class="fas fa-map-marker-alt fa-3x text-success mb-3"></i>
+                <h5 class="card-title">3 Host Countries</h5>
+                <p class="card-text">Matches will be played across Kenya, Tanzania, and Uganda in world-class stadiums.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Methods Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h3 class="text-center mb-4">
+            <i class="fas fa-credit-card text-primary"></i> 
+            Secure Payment Options
+        </h3>
+    </div>
+    <div class="col-md-4 text-center mb-3">
+        <div class="payment-method">
+            <i class="fas fa-mobile-alt fa-2x text-success mb-2"></i>
+            <h6>Mobile Money</h6>
+            <small class="text-muted">M-Pesa, Airtel Money, MTN, Tigo Pesa</small>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-3">
+        <div class="payment-method">
+            <i class="fas fa-credit-card fa-2x text-primary mb-2"></i>
+            <h6>Credit/Debit Cards</h6>
+            <small class="text-muted">Visa, Mastercard, American Express</small>
+        </div>
+    </div>
+    <div class="col-md-4 text-center mb-3">
+        <div class="payment-method">
+            <i class="fas fa-shield-alt fa-2x text-warning mb-2"></i>
+            <h6>Secure & Fast</h6>
+            <small class="text-muted">SSL encrypted transactions</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
